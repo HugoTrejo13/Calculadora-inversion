@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Módulo principal de la interfaz para la calculadora de inversión.
 
 """
 
