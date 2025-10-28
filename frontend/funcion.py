@@ -1,3 +1,4 @@
+from __future__ import annotations
 # -*- coding: utf-8 -*-
 # Módulo principal de la interfaz para la calculadora de inversión.
 
@@ -38,7 +39,7 @@ No borres este archivo todavía.
 Se va migrando poco a poco a pantallas y componentes limpios.
 """
 
-from __future__ import annotations
+
 
 import math
 

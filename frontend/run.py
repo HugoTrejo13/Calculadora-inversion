@@ -1,28 +1,17 @@
-<<<<<<< HEAD
-﻿from pathlib import Path
+from pathlib import Path
 import sys
 
-# Añade la carpeta raíz del proyecto al sys.path
+# añade la carpeta raíz del proyecto al sys.path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-# Importa tu app principal
-import funcion as app_main  # <-- este es tu funcion.py de siempre
-
-if __name__ == "__main__":
-    app_main.App().mainloop()
-=======
-# frontend/run.py
-"""
-Entry point limpio de la app Tkinter.
-Ejecuta la clase App definida en frontend/screens/app_main.py
-en lugar del archivo legacy frontend/funcion.py.
-"""
-
-from frontend.screens.app_main import App
+# intenta importar la App principal
+try:
+    from funcion import App        # funcion.py en la raíz del proyecto
+except ModuleNotFoundError:
+    # fallback: intentar desde paquete frontend.funcion
+    from frontend.funcion import App
 
 if __name__ == "__main__":
     App().mainloop()
-
->>>>>>> 1f57c7c (chore: mover proyecto a C:/Proyectos y reestructurar frontend/backend/screens/components/theme)

@@ -1,76 +1,122 @@
-"""Reusable tooltip widget extracted from the legacy interface."""
+# -*- coding: utf-8 -*-
+"""
+Componente de tooltip reutilizable + helper para ícono de ayuda.
+
+Uso típico:
+    from frontend.components.tooltip import make_help_icon
+
+    icon = make_help_icon(parent, key="monthly_contrib", lang="es")
+    icon.grid(row=..., column=...)
+
+El 'key' debe existir en i18n.get_help(lang, key).
+"""
 
 from __future__ import annotations
 
 import tkinter as tk
 from tkinter import ttk
 
+# ttkbootstrap es opcional; si está disponible, lo usamos para un look más moderno.
 try:
     import ttkbootstrap as tb  # type: ignore
+    HAS_TTKB = True
+except Exception:
+    tb = None
+    HAS_TTKB = False
 
-    BOOT = tb
-except Exception:  # pragma: no cover
-    BOOT = None
+from frontend.i18n import get_help
 
 
-class Tooltip:
-    """Lightweight tooltip that adapts to ttkbootstrap when available."""
+class HoverTooltip:
+    """
+    Tooltip básico que aparece al pasar el mouse por encima de un widget.
+    """
 
-    def __init__(self, widget: tk.Misc, text: str, delay: int = 350) -> None:
+    def __init__(self, widget: tk.Widget, title: str, text: str, wraplength: int = 320) -> None:
         self.widget = widget
+        self.title = title
         self.text = text
-        self.delay = delay
-        self._id: str | None = None
-        self._tip: tk.Toplevel | None = None
+        self.wraplength = wraplength
+        self.tipwindow: tk.Toplevel | None = None
 
-        widget.bind("<Enter>", self._schedule, add="+")
-        widget.bind("<Leave>", self._hide, add="+")
-        widget.bind("<ButtonPress>", self._hide, add="+")
+        self.widget.bind("<Enter>", self._enter, add="+")
+        self.widget.bind("<Leave>", self._leave, add="+")
+        self.widget.bind("<Motion>", self._move, add="+")
 
-    def _schedule(self, _event: tk.Event | None = None) -> None:
-        if self._id:
-            self.widget.after_cancel(self._id)
-        self._id = self.widget.after(self.delay, self._show)
-
-    def _show(self) -> None:
-        if self._tip or not self.text:
+    def _enter(self, _event=None):
+        if self.tipwindow:
             return
+        self._show_tooltip()
 
-        try:
-            bbox = self.widget.bbox("insert")
-        except Exception:
-            bbox = None
+    def _leave(self, _event=None):
+        self._hide_tooltip()
 
-        x_offset = bbox[0] if bbox else 0
-        y_offset = bbox[1] if bbox else 0
-        x = self.widget.winfo_rootx() + x_offset + 20
-        y = self.widget.winfo_rooty() + y_offset + 24
+    def _move(self, event):
+        if self.tipwindow:
+            # Posiciona cerca del puntero
+            x = event.x_root + 12
+            y = event.y_root + 8
+            self.tipwindow.geometry(f"+{x}+{y}")
 
-        self._tip = tw = tk.Toplevel(self.widget)
-        tw.wm_overrideredirect(True)
-        tw.wm_geometry(f"+{x}+{y}")
+    def _show_tooltip(self):
+        if self.tipwindow:
+            return
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)  # sin borde/janela nativa
+        tw.attributes("-topmost", True)
 
-        frame_cls = BOOT.Frame if BOOT else ttk.Frame
-        label_cls = BOOT.Label if BOOT else ttk.Label
+        # Estilos
+        frame = ttk.Frame(tw, padding=(8, 6, 8, 6))
+        frame.grid(sticky="nsew")
+        tw.grid_columnconfigure(0, weight=1)
+        tw.grid_rowconfigure(0, weight=1)
 
-        frame_kwargs = {"padding": 6, "relief": "solid", "borderwidth": 1}
-        label_kwargs = {"text": self.text, "justify": "left", "wraplength": 380}
+        lbl_title = ttk.Label(frame, text=self.title, font=("Segoe UI", 10, "bold"))
+        lbl_text = ttk.Label(frame, text=self.text, wraplength=self.wraplength, justify="left")
 
-        if BOOT:
-            frame_kwargs["bootstyle"] = "secondary"
-            label_kwargs["bootstyle"] = "secondary"
+        lbl_title.grid(row=0, column=0, sticky="w")
+        lbl_text.grid(row=1, column=0, sticky="w", pady=(2, 0))
 
-        frm = frame_cls(tw, **frame_kwargs)
-        frm.pack()
-        label_cls(frm, **label_kwargs).pack()
+        # Fondo más amigable si hay ttkbootstrap
+        if HAS_TTKB:
+            style = ttk.Style()
+            # uso de estilo por si queremos fondear distinto
+            style.configure("Tooltip.TFrame")
+            frame.configure(style="Tooltip.TFrame")
 
-    def _hide(self, _event: tk.Event | None = None) -> None:
-        if self._id:
-            self.widget.after_cancel(self._id)
-            self._id = None
-        if self._tip:
-            self._tip.destroy()
-            self._tip = None
+    def _hide_tooltip(self):
+        if self.tipwindow:
+            self.tipwindow.destroy()
+            self.tipwindow = None
 
 
-__all__ = ["Tooltip"]
+def make_help_icon(parent: tk.Widget, key: str, lang: str = "es") -> ttk.Label:
+    """
+    Crea un pequeño ícono (label) con "?" y engancha el tooltip con el texto i18n.
+
+    parent: contenedor
+    key: clave de ayuda (ej. 'monthly_contrib')
+    lang: 'es' | 'en' | 'pt'
+    """
+    title, text = get_help(lang, key)
+    if not title and not text:
+        title, text = ("", "Sin ayuda disponible.")
+
+    # Usamos una label con borde mínimo para que parezca "chip"
+    lbl = ttk.Label(
+        parent,
+        text="?",
+        width=2,
+        anchor="center",
+        cursor="question_arrow",
+        style="HelpChip.TLabel",
+    )
+
+    # Estilo base del "chip"; con ttkbootstrap se ve más bonito, pero también funciona sin él
+    style = ttk.Style()
+    style.configure("HelpChip.TLabel", foreground="#0b5ed7")  # azulito
+    style.map("HelpChip.TLabel", foreground=[("active", "#084298")])
+
+    # Tooltip on hover
+    HoverTooltip(lbl, title=title, text=text)
+    return lbl
