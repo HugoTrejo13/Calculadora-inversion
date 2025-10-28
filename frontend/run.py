@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿from pathlib import Path
 import sys
 
@@ -11,3 +12,17 @@ import funcion as app_main  # <-- este es tu funcion.py de siempre
 
 if __name__ == "__main__":
     app_main.App().mainloop()
+=======
+# frontend/run.py
+"""
+Entry point limpio de la app Tkinter.
+Ejecuta la clase App definida en frontend/screens/app_main.py
+en lugar del archivo legacy frontend/funcion.py.
+"""
+
+from frontend.screens.app_main import App
+
+if __name__ == "__main__":
+    App().mainloop()
+
+>>>>>>> 1f57c7c (chore: mover proyecto a C:/Proyectos y reestructurar frontend/backend/screens/components/theme)

@@ -1,0 +1,385 @@
+HELP_TEXTS = {
+
+    "es": {
+
+        "initial_amount": (
+
+            "Capital inicial",
+
+            "• Monto con el que comienzas.\n"
+
+            "• Se invierte desde el mes 1.\n"
+
+            "Ej.: Si pones 5,000 MXN y aportas 1,000/mes, el primer mes parte de 6,000 (menos comisiones de deposito)."
+
+        ),
+
+        "monthly_contrib": (
+
+            "Aporte mensual",
+
+            "• Dinero que agregas cada mes antes de comisiones.\n"
+
+            "• Si activas 'Crecimiento anual de aportes', este monto sube mes a mes."
+
+        ),
+
+        "horizon_years": (
+
+            "Horizonte (años)",
+
+            "• Tiempo total de la inversion.\n"
+
+            "• Al final se simula una venta unica (compra/venta + spread)."
+
+        ),
+
+        "annual_return": (
+
+            "Rendimiento anual nominal (%)",
+
+            "• Tasa esperada antes de inflacion.\n"
+
+            "• Se capitaliza mensual: r_m = (1+r)^(1/12)-1."
+
+        ),
+
+        "inflation": (
+
+            "Inflacion anual (%)",
+
+            "• Sirve para calcular 'Valor real'.\n"
+
+            "• No modifica depositos ni impuestos."
+
+        ),
+
+        "deposit_fee": (
+
+            "Comision por deposito (%)",
+
+            "• Porcentaje descontado a cada aporte mensual.\n"
+
+            "• El IVA se muestra en 'Comisiones', pero no aumenta el saldo."
+
+        ),
+
+        "buy_sell": (
+
+            "Comision de compra/venta (%)",
+
+            "• Se aplica una sola vez al final del horizonte al liquidar.\n"
+
+            "• El IVA se muestra en 'Comisiones'."
+
+        ),
+
+        "mgmt": (
+
+            "Administracion anual (%)",
+
+            "• Cobro del administrador, prorrateado mensual.\n"
+
+            "• El fee reduce el saldo; el IVA solo se reporta en 'Comisiones'."
+
+        ),
+
+        "vat_comm": (
+
+            "IVA sobre comisiones (%)",
+
+            "• Impuesto a las comisiones cobradas (deposito, administracion, custodia).\n"
+
+            "• No aumenta el saldo; solo se refleja como costo."
+
+        ),
+
+        "isr_gain": (
+
+            "ISR sobre ganancia (%)",
+
+            "• Impuesto anual sobre la ganancia positiva del año.\n"
+
+            "• Si el año cierra en perdida, no se cobra ISR ese año."
+
+        ),
+
+        "contrib_growth": (
+
+            "Crecimiento anual de aportes (%)",
+
+            "• Aumenta el aporte cada mes segun una tasa anual.\n"
+
+            "• Ej.: 6% anual ≈ 0.486% mensual."
+
+        ),
+
+        "custody_fixed": (
+
+            "Cuota fija de custodia (MXN/mes)",
+
+            "• Cargo mensual fijo; reduce el saldo.\n"
+
+            "• El IVA de esta cuota se reporta como 'Comisiones'."
+
+        ),
+
+        "market_spread": (
+
+            "Market spread de salida (%)",
+
+            "• Perdida por diferencia bid/ask y deslizamiento al vender.\n"
+
+            "• Se aplica una sola vez al final (ademas de compra/venta)."
+
+        ),
+
+    },
+
+    "en": {
+
+        "initial_amount": (
+
+            "Initial capital",
+
+            "• Money you start with (invested from month 1).\n"
+
+            "• Example: 5,000 + 1,000/month → first month bases on 6,000 minus deposit fees."
+
+        ),
+
+        "monthly_contrib": (
+
+            "Monthly contribution",
+
+            "• Amount added each month before fees.\n"
+
+            "• If 'Contribution growth' is set, this increases monthly."
+
+        ),
+
+        "horizon_years": (
+
+            "Horizon (years)",
+
+            "• Total investment time.\n"
+
+            "• A single exit (fees + spread) is simulated at the end."
+
+        ),
+
+        "annual_return": (
+
+            "Nominal annual return (%)",
+
+            "• Expected return before inflation.\n"
+
+            "• Compounded monthly: r_m = (1+r)^(1/12)-1."
+
+        ),
+
+        "inflation": (
+
+            "Annual inflation (%)",
+
+            "• Used to compute 'Real value'.\n"
+
+            "• Does not change deposits or taxes."
+
+        ),
+
+        "deposit_fee": (
+
+            "Deposit fee (%)",
+
+            "• Percentage charged on each monthly deposit.\n"
+
+            "• VAT is shown under 'Fees'."
+
+        ),
+
+        "buy_sell": (
+
+            "Buy/Sell fee (%)",
+
+            "• Applied once at the end upon liquidation.\n"
+
+            "• VAT shown under 'Fees'."
+
+        ),
+
+        "mgmt": (
+
+            "Management fee (%)",
+
+            "• Charged monthly from the balance.\n"
+
+            "• VAT reported as fee."
+
+        ),
+
+        "vat_comm": (
+
+            "VAT on fees (%)",
+
+            "• Tax on fees (deposit, management, custody).\n"
+
+            "• Does not increase balance; shown as cost."
+
+        ),
+
+        "isr_gain": (
+
+            "Tax on gains (%)",
+
+            "• Annual tax on positive yearly gains only."
+
+        ),
+
+        "contrib_growth": (
+
+            "Contribution growth (%)",
+
+            "• Increases monthly deposit according to annual rate.\n"
+
+            "• Example: 6%/yr ≈ 0.486%/mo."
+
+        ),
+
+        "custody_fixed": (
+
+            "Custody flat fee (MXN/mo)",
+
+            "• Fixed monthly fee; reduces balance.\n"
+
+            "• VAT reported as fee."
+
+        ),
+
+        "market_spread": (
+
+            "Exit market spread (%)",
+
+            "• Loss from bid/ask and slippage when selling at the end."
+
+        ),
+
+    },
+
+    "pt": {
+
+        "initial_amount": (
+
+            "Capital inicial",
+
+            "• Dinheiro com que voce comeca (investido desde o 1° mes).\n"
+
+            "• Ex.: 5.000 + 1.000/mês → base de 6.000 menos taxas de deposito."
+
+        ),
+
+        "monthly_contrib": (
+
+            "Aporte mensal",
+
+            "• Valor adicionado todo mes antes de taxas.\n"
+
+            "• Com 'Crescimento do aporte', aumenta mensalmente."
+
+        ),
+
+        "horizon_years": (
+
+            "Horizonte (anos)",
+
+            "• Tempo total da aplicacao.\n"
+
+            "• Saida unica no final (taxas + spread)."
+
+        ),
+
+        "annual_return": (
+
+            "Retorno anual nominal (%)",
+
+            "• Antes da inflacao; capitalizado mensalmente."
+
+        ),
+
+        "inflation": (
+
+            "Inflacao anual (%)",
+
+            "• Usada para 'Valor real'."
+
+        ),
+
+        "deposit_fee": (
+
+            "Taxa de deposito (%)",
+
+            "• Percentual cobrado em cada aporte mensal."
+
+        ),
+
+        "buy_sell": (
+
+            "Taxa de compra/venda (%)",
+
+            "• Aplicada uma vez no final."
+
+        ),
+
+        "mgmt": (
+
+            "Administracao anual (%)",
+
+            "• Cobrança mensal sobre o saldo; IVA reportado em 'Taxas'."
+
+        ),
+
+        "vat_comm": (
+
+            "IVA sobre taxas (%)",
+
+            "• Imposto sobre taxas (deposito, administracao, custodia)."
+
+        ),
+
+        "isr_gain": (
+
+            "Imposto sobre ganho (%)",
+
+            "• Cobrado somente se o ano fechar com ganho positivo."
+
+        ),
+
+        "contrib_growth": (
+
+            "Crescimento do aporte (%)",
+
+            "• Aumenta o aporte mensal conforme taxa anual."
+
+        ),
+
+        "custody_fixed": (
+
+            "Custodia fixa (MXN/mês)",
+
+            "• Tarifa mensal fixa; reduz o saldo."
+
+        ),
+
+        "market_spread": (
+
+            "Spread de saida (%)",
+
+            "• Perda por bid/ask e slippage na venda final."
+
+        ),
+
+    },
+
+}
+
+

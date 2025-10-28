@@ -1,0 +1,206 @@
+    def _build_plan(self):
+        # Scrollable canvas
+        outer = ttk.Frame(self.plan_tab)
+        outer.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(outer, highlightthickness=0)
+        vbar = ttk.Scrollbar(outer, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=vbar.set)
+        vbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        inner = ttk.Frame(canvas)
+        inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=inner, anchor="nw")
+
+        # Mouse-wheel scrolling
+        def _wheel(event):
+            delta = event.delta if hasattr(event, "delta") else 0
+            if delta == 0 and getattr(event, "num", None) in (4, 5):  # X11
+                delta = 120 if event.num == 4 else -120
+            if delta:
+                canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+
+        inner.bind_all("<MouseWheel>", _wheel)
+        inner.bind_all("<Button-4>", _wheel)
+        inner.bind_all("<Button-5>", _wheel)
+
+        # --- Par�metros ---
+        box = ttk.LabelFrame(inner, text=self.strings["params"], padding=12)
+        box.pack(fill="x", padx=10, pady=(12, 8))
+        ttk.Separator(inner, orient="horizontal").pack(fill="x", padx=10, pady=(0, 6))
+
+        self.var_initial = tk.StringVar(value="0")
+        self.var_monthly = tk.StringVar(value="200")
+        self.var_years = tk.IntVar(value=5)
+        self.var_return = tk.DoubleVar(value=10.0)
+        self.var_infl = tk.DoubleVar(value=4.0)
+        self.var_growth = tk.DoubleVar(value=0.0)
+        self.var_custody = tk.StringVar(value="0.0")
+        self.var_spread = tk.StringVar(value="0.0")
+
+        self._labeled_entry(box, self.strings["initial_amount"], self.var_initial, 0, 0)
+        self._labeled_entry(box, self.strings["monthly_contrib"], self.var_monthly, 1, 0)
+        self._labeled_scale(
+            box, self.strings['horizon_years'], self.var_years, 2, 0,
+            from_=1, to_=50, step=1,
+            fmt=lambda v: f"{int(float(v))} anios",
+            help_key='horizon_years'
+        )
+        self._labeled_scale(
+            box, self.strings['annual_return'], self.var_return, 0, 1,
+            from_=0.0, to_=25.0, step=0.1,
+            fmt=lambda v: f"{float(v):.1f} %",
+            help_key='annual_return'
+        )
+        self._labeled_scale(
+            box, self.strings['inflation'], self.var_infl, 1, 1,
+            from_=0.0, to_=15.0, step=0.1,
+            fmt=lambda v: f"{float(v):.1f} %",
+            help_key='inflation'
+        )
+        self._labeled_scale(
+            box, self.strings['contrib_growth'], self.var_growth, 2, 1,
+            from_=0.0, to_=15.0, step=0.1,
+            fmt=lambda v: f"{float(v):.1f} %",
+            help_key='contrib_growth'
+        )
+
+        # --- Fricci�n e impuestos ---
+        fr = ttk.LabelFrame(inner, text=self.strings["friction"], padding=12)
+        fr.pack(fill="x", padx=10, pady=8)
+        ttk.Separator(inner, orient="horizontal").pack(fill="x", padx=10, pady=(0, 6))
+
+        self.var_fee_dep = tk.StringVar(value="0.0")
+        self.var_buy_sell = tk.StringVar(value="0.0")
+        self.var_mgmt = tk.StringVar(value="0.0")
+        self.var_vat = tk.StringVar(value="16.0")
+        self.var_tax = tk.StringVar(value="10.0")
+
+        self._labeled_entry(fr, self.strings["deposit_fee"], self.var_fee_dep, 0, 0, help_key="deposit_fee")
+        self._labeled_entry(fr, self.strings["buy_sell"], self.var_buy_sell, 1, 0, help_key="buy_sell")
+        self._labeled_entry(fr, self.strings["mgmt"], self.var_mgmt, 2, 0, help_key="mgmt")
+        self._labeled_entry(fr, self.strings["vat_comm"], self.var_vat, 0, 1, help_key="vat_comm")
+        self._labeled_entry(fr, self.strings["isr_gain"], self.var_tax, 1, 1, help_key="isr_gain")
+        self._labeled_entry(fr, self.strings["market_spread"], self.var_spread, 2, 1, help_key="market_spread")
+        self._labeled_entry(fr, self.strings["custody_fixed"], self.var_custody, 3, 1, help_key="custody_fixed")
+
+        # --- Resumen ---
+        sm = ttk.LabelFrame(inner, text=self.strings["summary"], padding=12)
+        sm.pack(fill="x", padx=10, pady=8)
+        ttk.Separator(inner, orient="horizontal").pack(fill="x", padx=10, pady=(0, 6))
+
+        self.lbl_nominal = ttk.Label(sm, text="{}: ".format(self.strings["nominal_value"]))
+        self.lbl_total   = ttk.Label(sm, text="{}: ".format(self.strings["total_contrib"]))
+        self.lbl_gain    = ttk.Label(sm, text="{}: ".format(self.strings["gain"]))
+        self.lbl_real    = ttk.Label(sm, text="{}: ".format(self.strings["real_value"]))
+
+        self.lbl_nominal.grid(row=0, column=0, sticky="w", padx=4, pady=2)
+        self.lbl_total.grid(row=1, column=0, sticky="w", padx=4, pady=2)
+        self.lbl_gain.grid(row=2, column=0, sticky="w", padx=4, pady=2)
+        self.lbl_real.grid(row=3, column=0, sticky="w", padx=4, pady=2)
+
+        self.btn_copy = ttk.Button(sm, text=self.strings["copy"], command=self._copy_summary)
+        self.btn_copy.grid(row=0, column=2, rowspan=4, sticky="e", padx=6, pady=4)
+        sm.grid_columnconfigure(1, weight=1)
+
+        ttk.Label(inner, text=self.strings["need_monthly"]).pack(anchor="w", padx=14, pady=(2, 8))
+
+        # --- Evolucion anual ---
+        cols = ("year", "final", "contrib", "gain", "real", "fees", "taxes")
+        tree_frame = ttk.Frame(inner)
+        tree_frame.pack(fill="both", expand=True, padx=10, pady=(0, 12))
+        self.tree = ttk.Treeview(tree_frame, columns=cols, show="headings", height=12)
+        self.tree.pack(side="left", fill="both", expand=True)
+        sb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        sb.pack(side="right", fill="y")
+        self.tree.configure(yscrollcommand=sb.set)
+
+
+        self.tree.heading("year", text=self.strings.get("years_to_invest", self.strings.get("years", "Year")))
+        self.tree.heading("final", text=self.strings["final_balance"])
+        self.tree.heading("contrib", text=self.strings["cum_contrib"])
+        self.tree.heading("gain", text=self.strings["gain_col"] + " (neto acumulada)")
+        self.tree.heading("real", text=self.strings.get("real_value", self.strings.get("real_col", "Real")))
+        self.tree.heading("fees", text=self.strings.get("fees", self.strings.get("fees_col", "Fees")))
+        self.tree.heading("taxes", text=self.strings.get("taxes", self.strings.get("taxes_col", "Taxes")))
+
+        self.tree.column("year", width=100, anchor="center")
+        self.tree.column("final", width=160, anchor="e")
+        self.tree.column("contrib", width=160, anchor="e")
+        self.tree.column("gain", width=180, anchor="e")
+        self.tree.column("real", width=160, anchor="e")
+        self.tree.column("fees", width=120, anchor="e")
+        self.tree.column("taxes", width=120, anchor="e")
+
+        # disparadores de rec�lculo
+        for v in (self.var_initial, self.var_monthly, self.var_years, self.var_return, self.var_infl,
+                  self.var_growth, self.var_custody, self.var_spread,
+                  self.var_fee_dep, self.var_buy_sell, self.var_mgmt, self.var_vat, self.var_tax):
+            v.trace_add("write", lambda *_: self._recalc())
+
+        self._recalc()  # mantener
+
+    def _labeled_scale(self, parent, label, var, row, col, from_, to_, step, fmt, help_key=None):
+        frame_cls = BOOT.Frame if BOOT else ttk.Frame
+        label_cls = BOOT.Label if BOOT else ttk.Label
+        scale_cls = getattr(BOOT, "Scale", ttk.Scale) if BOOT else ttk.Scale
+
+        frm = frame_cls(parent)
+        frm.grid(row=row, column=col, padx=8, pady=6, sticky="ew")
+        parent.grid_columnconfigure(col, weight=1)
+
+        head = frame_cls(frm)
+        head.pack(anchor="w", fill="x")
+
+        label_cls(head, text=label).pack(side="left")
+        if help_key:
+            self._help_icon(head, help_key).pack(side="left", padx=(4, 0))
+
+        val_lbl = label_cls(head, text=fmt(var.get()))
+        val_lbl.pack(side="right")
+
+        def on_move(_value=None):
+            try:
+                current = float(var.get())
+            except Exception:
+                current = from_
+            snapped = round(current / step) * step
+            snapped = max(min(snapped, to_), from_)
+            if abs(snapped - current) > 1e-9:
+                var.set(snapped)
+            val_lbl.config(text=fmt(snapped))
+
+        scale_cls(
+            frm,
+            orient="horizontal",
+            from_=from_,
+            to=to_,
+            variable=var,
+            command=lambda _v: on_move(),
+        ).pack(fill="x")
+        on_move()
+
+        var.trace_add("write", lambda *_: self._recalc())
+
+
+    def _labeled_entry(self, parent, label, var, row, col, help_key=None, width=16):
+        frame_cls = BOOT.Frame if BOOT else ttk.Frame
+        label_cls = BOOT.Label if BOOT else ttk.Label
+        entry_cls = BOOT.Entry if BOOT else ttk.Entry
+
+        frm = frame_cls(parent)
+        frm.grid(row=row, column=col, padx=8, pady=6, sticky="ew")
+        parent.grid_columnconfigure(col, weight=1)
+
+        head = frame_cls(frm)
+        head.pack(anchor="w", fill="x")
+
+        label_cls(head, text=label).pack(side="left")
+        if help_key:
+            self._help_icon(head, help_key).pack(side="left", padx=(4, 0))
+
+        entry_cls(frm, textvariable=var, width=width).pack(anchor="w")
+
+    # ---------- Logic ----------
+

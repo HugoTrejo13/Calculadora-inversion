@@ -1,0 +1,90 @@
+0521: 
+0522: 
+0523: def fmt_currency(value: float, symbol: str = "MX$") -> str:
+0524:     try:
+0525:         # Intento con configuraci�n local del usuario
+0526:         return f"{symbol} {value:,.2f}"
+0527:     except Exception:
+0528:         return f"{symbol} {value:.2f}"
+0529: 
+0530: 
+0531: @dataclass
+0532: class Inputs:
+0533:     initial: float = 0.0
+0534:     monthly: float = 0.0
+0535:     years: int = 1
+0536:     annual_return: float = 10.0     # %
+0537:     inflation: float = 4.0          # %
+0538:     # Fricci�n e impuestos
+0539:     fee_deposit: float = 0.0        # %
+0540:     buy_sell: float = 0.0           # %
+0541:     mgmt: float = 0.0               # %
+0542:     vat_on_fees: float = 16.0       # %
+0543:     tax_gain: float = 10.0          # %
+0544:     contrib_growth: float = 0.0     # % anual
+0545:     custody_fixed: float = 0.0      # MXN/mes
+0546:     market_spread: float = 0.0      # % aplicado al final
+0547: 
+0548: 
+0549: @dataclass
+0550: class YearRow:
+0551:     year: int
+0552:     final_balance: float
+0553:     cum_contrib: float
+0554:     gain: float
+0555:     real_value: float
+0556:     fees: float
+0557:     taxes: float
+0558: 
+0559: 
+0560: class App(tk.Tk):
+0561:     def __init__(self):
+0562:         # ===== Root & style =====
+0563:         if BOOT:
+0564:             super().__init__()
+0565:             self.style = BOOT.Style("flatly")
+0566:         else:
+0567:             super().__init__()
+0568:             self.style = ttk.Style(self)
+0569: 
+0570:         self.lang = "es"
+0571:         self.strings = LANGUAGES[self.lang]
+0572: 
+0573:         self.title(self.strings["app_title"])
+0574:         self.geometry("1200x720")
+0575:         self.minsize(980, 600)
+0576: 
+0577:         # ===== Accesibilidad (estado) =====
+0578:         self.base_font_size = tkfont.nametofont("TkDefaultFont").cget("size")
+0579:         self.cb_var = tk.BooleanVar(value=False)
+0580: 
+0581:         # ===== Top bar =====
+0582:         self._build_topbar()
+0583: 
+0584:         # ===== Notebook con tabs =====
+0585:         self.nb = ttk.Notebook(self)
+0586:         self.nb.pack(fill="both", expand=True)
+0587: 
+0588:         self.home_tab = ttk.Frame(self.nb)
+0589:         self.calc_tab = ttk.Frame(self.nb)
+0590:         self.plan_tab = ttk.Frame(self.nb)
+0591: 
+0592:         self.nb.add(self.home_tab, text=self.strings["tab_home"])
+0593:         self.nb.add(self.calc_tab, text=self.strings["tab_calc"])
+0594:         self.nb.add(self.plan_tab, text=self.strings["tab_plan"])
+0595: 
+0596:         # ===== Contenidos =====
+0597:         self._build_home()
+0598:         self._build_calc_placeholder()
+0599:         self._build_plan()
+0600: 
+0601:         self._apply_font_size()
+0602: 
+0603:     # ---------- UI Building ----------
+0604: 
+0605:     def _build_topbar(self):
+0606:         top = ttk.Frame(self)
+0607:         top.pack(fill="x", padx=8, pady=6)
+0608: 
+0609:         # Accesibilidad
+0610:         ttk.Label(top, text=self.strings["access"]).pack(side="left", padx=(0, 6))

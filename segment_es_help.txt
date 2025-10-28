@@ -1,0 +1,15 @@
+        "custody_fixed": "Cuota fija de custodia (MXN/mes)",
+
+        "market_spread": "Market spread de salida (%)",
+
+        "summary": "Resumen",
+
+        "nominal_value": "Valor final (nominal)",
+
+        "total_contrib": "Aportes totales",
+
+        "gain": "Ganancia generada",
+
+        "real_value": "Valor ajustado por inflación",
+
+        "need_monthly": "Se necesita un aporte mensual positi
